@@ -7,7 +7,6 @@
     "build": "vue-cli-service build"
   },
   "dependencies": {
-    "@vue-youtube/core": "^0.0.6",
     "axios": "^1.5.0",
     "bootstrap": "^5.3.2",
     "core-js": "^3.8.3",

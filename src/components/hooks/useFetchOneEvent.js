@@ -9,10 +9,11 @@ export function useFetchOneEvent(init = {}){
         try{
             const res = await axios.get(`${process.env.VUE_APP_API_URL}/api/events/` + init.id)
             event.value = res.data
-            event.value.ref_video = event.value.ref_video.split('=')[1]
+            console.log('Полученные данные о мероприятии:', event.value) // Отладочная информация
         }
         catch (e){
-            alert('Ошибка')
+            console.error('Ошибка при получении данных о мероприятии:', e)
+            alert('Ошибка при получении данных о мероприятии')
         }
     }
     onMounted(fetch)

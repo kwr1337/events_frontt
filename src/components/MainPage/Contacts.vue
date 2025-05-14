@@ -77,7 +77,7 @@
             Запись по договоренности
           </a>
 
-          <router-link :to="{name: 'sessions'}"><MyButton :color="'white'" class="btn">Записаться на сеанс</MyButton></router-link>
+          <!-- <router-link :to="{name: 'sessions'}"><MyButton :color="'white'" class="btn">Записаться на сеанс</MyButton></router-link> -->
         </div>
       </div>
     </div>

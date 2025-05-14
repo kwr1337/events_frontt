@@ -3,11 +3,14 @@ import MainPage from "@/pages/MainPage.vue";
 import SessionsPage from "@/pages/SessionsPage.vue";
 import SessionCard from "@/components/Sessions/SessionCard.vue";
 import AdminPage from "@/pages/AdminPage.vue";
-import Auth from "@/components/Admin/Auth.vue";
-import AddEvent from "@/components/Admin/AddEvent.vue";
-import DeleteEvent from "@/components/Admin/DeleteEvent.vue";
-
-
+import LoginForm from "@/components/Admin/LoginForm.vue";
+import DirectionEvents from "@/pages/DirectionEvents.vue";
+import DirectionsManager from "@/components/Admin/DirectionsManager.vue";
+import EventsManager from "@/components/Admin/EventsManager.vue";
+import SocialProjectsManager from "@/components/Admin/SocialProjectsManager.vue";
+import ActivityDirectionsManager from '@/components/Admin/ActivityDirectionsManager.vue'
+import ActivityDirectionPage from '@/pages/ActivityDirectionPage.vue'
+import { authService } from '@/services/auth';
 
 const routes = [
     {
@@ -25,28 +28,52 @@ const routes = [
         component: SessionCard
     },
     {
-        name: 'admin',
-        path: '/admin',
-        component: Auth
+        name: 'direction-events',
+        path: '/directions/:id/events',
+        component: DirectionEvents
     },
     {
-        name: 'menu',
-        path: '/admin/menu',
+        name: 'login',
+        path: '/login',
+        component: LoginForm
+    },
+    {
+        path: '/admin',
         component: AdminPage,
+        meta: { requiresAuth: true },
         children: [
             {
-                name: 'add' ,
-                path: 'add',
-                component: AddEvent
+                path: '',
+                redirect: '/admin/directions'
             },
             {
-                name: 'delete' ,
-                path: 'delete',
-                component: DeleteEvent
+                name: 'admin-directions',
+                path: 'directions',
+                component: DirectionsManager
             },
+            {
+                name: 'admin-activity-directions',
+                path: 'activity-directions',
+                component: ActivityDirectionsManager
+            },
+            {
+                name: 'admin-events',
+                path: 'events',
+                component: EventsManager
+            },
+            {
+                name: 'admin-social-projects',
+                path: 'social-projects',
+                component: SocialProjectsManager
+            }
         ]
     },
-    ]
+    {
+        path: '/activity-directions/:id',
+        name: 'activity-direction',
+        component: ActivityDirectionPage
+    }
+]
 
 const router = createRouter({
     history: createWebHistory(process.env.BASE_URL),
@@ -62,4 +89,21 @@ const router = createRouter({
         }
     }
 })
+
+// Защита роутов, требующих авторизации
+router.beforeEach((to, from, next) => {
+    if (to.matched.some(record => record.meta.requiresAuth)) {
+        if (!authService.isAuthenticated()) {
+            next({ 
+                name: 'login',
+                query: { redirect: to.fullPath }
+            });
+        } else {
+            next();
+        }
+    } else {
+        next();
+    }
+})
+
 export default router

@@ -1,6 +1,7 @@
 <template>
   <div class="app">
     <router-view></router-view>
+    <VkWidget />
   </div>
 
 </template>
@@ -10,10 +11,13 @@
 
 import MainPage from "@/pages/MainPage.vue";
 import NavBar from "@/components/MainPage/NavBar.vue";
+import VkWidget from '@/components/UI/VkWidget.vue';
 
 export default {
   name: 'App',
-
+  components: {
+    VkWidget,
+  }
 }
 </script>
 

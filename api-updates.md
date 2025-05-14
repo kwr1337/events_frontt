@@ -12,6 +12,8 @@
   - fetchEvents
   - handleEventSubmit
   - deleteEvent
+- Добавлено отображение текущего изображения в форме редактирования направления
+- Добавлено отображение текущего изображения в форме редактирования мероприятия
 
 ### 2. EventsManager.vue (Управление мероприятиями/событиями)
 - Добавлена авторизация для всех запросов (GET, POST, PATCH, DELETE)
@@ -21,6 +23,7 @@
   - fetchEvents
   - saveEvent
   - deleteEvent
+- Добавлено отображение текущего изображения в форме редактирования события
 
 ### 3. SocialProjectsManager.vue (Управление социальными проектами)
 - Добавлена авторизация для всех запросов (GET, POST, PATCH, DELETE)
@@ -29,6 +32,15 @@
   - fetchProjects
   - saveProject
   - deleteProject
+- Добавлено отображение текущего изображения в форме редактирования проекта
+
+## Визуальные улучшения
+- Добавлено отображение текущего изображения при редактировании
+- В формы редактирования добавлена подпись "Выберите новое изображение, чтобы заменить текущее"
+- Добавлены стили для отображения текущего изображения:
+  - Изображение отображается в размере 150x150px
+  - Добавлена рамка для визуального выделения
+  - Добавлена подпись "Текущее изображение"
 
 ## Примеры запросов для обновления данных:
 
@@ -82,29 +94,4 @@ fetch('http://localhost:3000/api/social-projects/1', {
 })
   .then(response => response.json())
   .then(data => console.log('Проект обновлен:', data));
-```
-
-# events_front
-
-## Project setup
-```
-npm install
-```
-
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+``` 

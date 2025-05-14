@@ -17,7 +17,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 100px;
+  margin-bottom: 30px;
 }
 @media (max-width: 1023px) {
   .__title{

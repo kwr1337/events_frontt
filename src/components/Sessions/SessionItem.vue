@@ -1,11 +1,12 @@
 <template>
   <router-link :to="{path: 'sessions' + `/${data.id}`} " class="link">
   <div class="__container">
-    <div class="date mobile">{{data.date}}</div>
+    <div class="date mobile">{{formatDate(data.date)}}</div>
     <img  :src="imageUrl"/>
     <div>
     <div class="text">
-    <div class="date default">{{data.date}}</div>
+    <div class="date default">{{formatDate(data.date)}}</div>
+    <div v-if="formatTime(data.date)" class="date default">{{formatTime(data.date)}}</div>
     <div class="name">{{data.name}}</div>
     <div class="description">{{data.description}}</div>
       <router-link :to="{path: 'sessions' + `/${data.id}`} ">
@@ -25,14 +26,55 @@ export default {
   components: {MyButton},
   props:{
     data:{
-
+      type: Object,
+      required: true
     }
   },
   setup(props){
     const imageUrl = new URL(`${process.env.VUE_APP_API_URL}/${props.data.img}`, import.meta.url).href
-    return {imageUrl};
+    
+    // Функция для форматирования даты
+    const formatDate = (dateString) => {
+      if (!dateString) return '';
+      
+      try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('ru-RU', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        });
+      } catch (e) {
+        console.error('Ошибка форматирования даты:', e);
+        return dateString;
+      }
+    };
+    
+    // Функция для извлечения времени из даты
+    const formatTime = (dateString) => {
+      if (!dateString) return '';
+      
+      try {
+        const date = new Date(dateString);
+        // Проверяем, есть ли время в дате
+        if (date.getHours() === 0 && date.getMinutes() === 0) return '';
+        
+        return date.toLocaleTimeString('ru-RU', {
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      } catch (e) {
+        console.error('Ошибка форматирования времени:', e);
+        return '';
+      }
+    };
+    
+    return {
+      imageUrl,
+      formatDate,
+      formatTime
+    };
   }
-
 }
 </script>
 

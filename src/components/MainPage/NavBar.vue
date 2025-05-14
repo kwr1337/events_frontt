@@ -4,12 +4,12 @@
     <router-link :to="{name: 'main', hash: '#start'}" class="img" @click="burger_active=false"></router-link>
     <div class="links" :class="{active: burger_active}">
   <router-link :to="{name: 'main', hash: '#start'}" class="link" @click="burger_active=false">Главная</router-link>
-  <router-link to="/sessions" class="link">Сеансы</router-link>
+  <!-- <router-link to="/sessions" class="link">Сеансы</router-link> -->
   <router-link :to="{name: 'main', hash: '#feedback'}" class="link" @click="burger_active=false">Отзывы</router-link>
   <router-link :to="{name: 'main', hash: '#contacts'}" class="link" @click="burger_active=false">Контакты</router-link>
   <router-link :to="{name: 'main', hash: '#about'}" class="link" @click="burger_active=false">О нас</router-link>
       <router-link :to="{name: 'sessions'}">
-        <my-button class="btn">Записаться на сеанс</my-button>
+        <!-- <my-button class="btn">Записаться на сеанс</my-button> -->
       </router-link>
     </div>
     <div class="burger" :class="{active: burger_active}" @click="burger_active=!burger_active"><span></span></div>

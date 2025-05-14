@@ -2,25 +2,40 @@
   <div>
     <NavBar/>
     <div class="wrapper">
-      <Title>{{ event.value.name }}</Title>
+      <div class="header-content">
+        <MyButton @click="$router.go(-1)" class="back-btn">
+          <span class="back-icon">←</span> Назад
+        </MyButton>
+        <Title>{{ event.value.name }}</Title>
+      </div>
       <div class="content">
         <div class="text">
           <div class="info">
-            <div class="date">{{ event.value.date }}</div>
+            <div class="date">{{ formatDate(event.value.date) }}</div>
+            <div v-if="formatTime(event.value.date)" class="date">{{ formatTime(event.value.date) }}</div>
             <div class="date">{{ event.value.age_limit }}</div>
-
           </div>
           <div class="name">{{ event.value.name }}</div>
-          <div class="date">{{ event.value.place }}</div>
+          <div class="date">{{ event.value.location || event.value.place }}</div>
           <div class="description">{{ event.value.description }}</div>
-          <a :href="event.value.ref_buy" target="_blank">
-            <my-button>Купить</my-button>
+          <a :href="whatsappLink" target="_blank" rel="noopener noreferrer">
+            <my-button class="signup-btn">Записаться на занятие</my-button>
           </a>
         </div>
-        <img :src="imageUrl(event.value.img)"/>
+        <img :src="imageUrl(event.value.img)" :alt="event.value.name" class="session-image">
       </div>
       <div class="video">
-        <div ref="youtube"/>
+        <div class="video-container">
+          <iframe 
+            v-if="event.value.ref_video"
+            :src="getRutubeUrl(event.value.ref_video)"
+            width="720"
+            height="405"
+            frameborder="0"
+            allow="clipboard-write; autoplay"
+            allowfullscreen
+          ></iframe>
+        </div>
         <div class="description">{{ event.value.description2 }}</div>
       </div>
 
@@ -33,7 +48,6 @@ import {useRoute} from 'vue-router'
 import {useFetchOneEvent} from "@/components/hooks/useFetchOneEvent";
 import Title from "@/components/UI/Title.vue";
 import NavBar from "@/components/MainPage/NavBar.vue";
-import {usePlayer} from '@vue-youtube/core';
 import MyButton from "@/components/UI/MyButton.vue";
 import {computed, onMounted, ref} from "vue";
 
@@ -42,38 +56,94 @@ export default {
   setup() {
     const {event} = useFetchOneEvent({id: useRoute().params.id})
 
+    // Создаем computed свойство для ссылки на WhatsApp
+    const whatsappLink = computed(() => {
+      const phoneNumber = '79377730559'; // Номер телефона для связи
+      const text = event.value ? 
+        `Здравствуйте! Хочу записаться на мероприятие "${event.value.name}"` : 
+        'Здравствуйте! Хочу записаться на мероприятие';
+      return `https://wa.me/${phoneNumber}?text=${encodeURIComponent(text)}`;
+    });
+
     function imageUrl(value) {
       return new URL(`${process.env.VUE_APP_API_URL}/${value}`, import.meta.url).href
     }
 
-    const youtube = ref();
-    const videoId = ref('dQw4w9WgXcQ');
-    let WidthVideo = 0;
-    let HeightVideo = 0;
+    // Функция для форматирования даты
+    function formatDate(dateString) {
+      if (!dateString) return '';
+      
+      try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('ru-RU', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        });
+      } catch (e) {
+        console.error('Ошибка форматирования даты:', e);
+        return dateString;
+      }
+    }
+    
+    // Функция для извлечения времени из даты
+    function formatTime(dateString) {
+      if (!dateString) return '';
+      
+      try {
+        const date = new Date(dateString);
+        // Проверяем, есть ли время в дате
+        if (date.getHours() === 0 && date.getMinutes() === 0) return '';
+        
+        return date.toLocaleTimeString('ru-RU', {
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      } catch (e) {
+        console.error('Ошибка форматирования времени:', e);
+        return '';
+      }
+    }
 
-    if (window.innerWidth > 1000) WidthVideo = 650;
-    HeightVideo = 430
-    if (window.innerWidth < 1000) WidthVideo = 424;
-    HeightVideo = 410
-    if (window.innerWidth <= 425) WidthVideo = 320;
-    HeightVideo = 230
+    function getRutubeUrl(url) {
+      if (!url) return '';
+      
+      // Преобразуем url в строку
+      const urlStr = String(url).trim();
+      
+      // Если строка пустая после очистки
+      if (!urlStr) return '';
 
+      try {
+        // Если передан только ID видео
+        if (!urlStr.includes('/')) {
+          return `https://rutube.ru/embed/${urlStr}`;
+        }
 
-    usePlayer(videoId, youtube, {
-      playerVars: {
-        autoplay: 0
-      },
-      width: WidthVideo,
-      height: 330,
-    });
-    setTimeout(() => {
-      videoId.value = event.value.ref_video;
-    }, 1000);
+        // Если передан полный URL, пытаемся извлечь ID
+        const videoId = urlStr
+          .split('/')
+          .filter(Boolean) // Убираем пустые строки
+          .pop(); // Берем последний элемент
 
+        if (!videoId) return '';
+        
+        return `https://rutube.ru/embed/${videoId}`;
+      } catch (error) {
+        console.error('Ошибка при обработке URL Rutube:', error);
+        return '';
+      }
+    }
 
-    return {event, imageUrl, youtube}
+    return {
+      event,
+      imageUrl,
+      getRutubeUrl,
+      formatDate,
+      formatTime,
+      whatsappLink
+    };
   }
-
 }
 </script>
 
@@ -85,11 +155,33 @@ export default {
 .video {
   margin-top: 50px;
   display: flex;
+  gap: 30px;
   margin-bottom: 100px;
+  width: 100%;
+  max-width: 100%;
+  
+  .video-container {
+    flex: 1 1 60%;
+    max-width: 720px;
+    aspect-ratio: 16/9;
+    position: relative;
+    background: #000;
+    
+    iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 10px;
+    }
+  }
 
   .description {
-    width: 415px;
-    margin-left: 135px;
+    flex: 1 1 40%;
+    min-width: 0;
+    width: auto;
+    max-width: 400px;
   }
 }
 
@@ -143,7 +235,7 @@ export default {
 }
 
 img {
-  width: 650px;
+  width: 450px;
   border-radius: 10px;
   margin-left: 135px;
 }
@@ -155,13 +247,27 @@ img {
   img {
     width: 450px;
   }
+  .video {
+    flex-direction: column;
+    
+    .video-container {
+      width: 100%;
+      max-width: 100%;
+    }
+    
+    .description {
+      width: 100%;
+      margin-left: 0;
+      margin-top: 20px;
+    }
+  }
 }
 
 @media (max-width: 1000px) {
   .wrapper {
     top: 100px;
     width: 100%;
-
+    padding: 0 20px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -169,44 +275,158 @@ img {
   }
   .content {
     flex-direction: column;
-  }
-  img {
-    margin-left: 0;
-    width: 415px;
-  }
-  .video {
     align-items: center;
-    flex-direction: column-reverse;
-
-    .description {
+    
+    img {
       margin-left: 0;
+      margin-top: 20px;
+      width: 100%;
+    }
+    
+    .text {
+      width: 100%;
     }
   }
-  .description {
-    width: 415px;
+  
+  .video {
+    .video-container {
+      width: 100%;
+    }
   }
-  .btn {
-    margin-bottom: 20px;
-  }
-
 }
 
 @media (max-width: 425px) {
   img {
-    width: 320px;
+    width: 100%;
   }
   .text {
     display: flex;
     align-items: center;
     flex-direction: column;
+    width: 100%;
   }
   .description {
-    width: 320px;
+    width: 100%;
   }
   .video {
     .description {
-      width: 320px;
+      width: 100%;
     }
+  }
+}
+
+.header-content {
+  position: relative;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.back-btn {
+  position: absolute !important;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px !important;
+  background: transparent !important;
+  border: 1px solid #018ABE !important;
+  color: #018ABE !important;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: #018ABE !important;
+    color: #fff !important;
+  }
+}
+
+.back-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.session-image {
+  width: 50%;
+  height: 500px;
+  object-fit: cover;
+  border-radius: 20px;
+}
+
+.session-info {
+  flex: 1;
+  color: #fff;
+}
+
+.info-block {
+  margin-bottom: 30px;
+
+  h3 {
+    font-family: 'El Messiri', serif;
+    font-size: 24px;
+    color: #018ABE;
+    margin-bottom: 15px;
+  }
+
+  p {
+    font-size: 18px;
+    line-height: 1.6;
+  }
+}
+
+@media (max-width: 1300px) {
+  .content {
+    width: 100%;
+    padding: 0 20px;
+  }
+}
+
+@media (max-width: 1023px) {
+  .session-details {
+    flex-direction: column;
+  }
+
+  .session-image {
+    width: 100%;
+    height: 300px;
+  }
+
+  .header-content {
+    padding-top: 50px;
+  }
+
+  .back-btn {
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 480px) {
+  .info-block {
+    h3 {
+      font-size: 20px;
+    }
+
+    p {
+      font-size: 16px;
+    }
+  }
+}
+
+.signup-btn {
+  background: #018ABE !important;
+  color: #fff !important;
+  padding: 12px 25px !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+  
+  &:hover {
+    background: #0171a1 !important;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(1, 138, 190, 0.3);
   }
 }
 </style>
