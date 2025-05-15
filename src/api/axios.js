@@ -2,7 +2,8 @@ import axios from 'axios';
 import { authService } from '@/services/auth';
 
 const api = axios.create({
-    baseURL: process.env.VUE_APP_API_URL
+    baseURL: process.env.VUE_APP_API_URL,
+    withCredentials: true
 });
 
 // Добавляем перехватчик для добавления токена к запросам
